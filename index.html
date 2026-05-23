@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat Widget</title>
+</head>
+<body>
+
+<script>
+// ============================================================
+//  CLIENT CONFIG — EDIT ONLY THIS SECTION FOR EACH CLIENT
+// ============================================================
+
+const CLIENT = {
+
+  // -- ASSISTANT IDENTITY --
+  name:           "Sanvi",
+  initials:       "AI",
+  logo:           "rangsarees.jpeg",               // Direct image URL or leave "" for initials
+                                    // e.g. "https://yourcdn.com/client-logo.png"
+
+  // -- COLORS --
+  primaryColor:   "#0D1B2A",        // Header, bubble button, user messages
+  accentColor:    "#00B4D8",        // Glow ring, typing dots, focus highlights
+
+  // -- FONT --
+  // Options: "'DM Sans', sans-serif" | "'Inter', sans-serif" |
+  //          "'Poppins', sans-serif" | "'Nunito', sans-serif" |
+  //          "'Lato', sans-serif"    | "Georgia, serif"
+  font:           "'DM Sans', sans-serif",
+
+  // -- MESSAGES --
+  welcomeMessage: "Hi there! I'm Sanvi, your AI assistant. How can I help you today?",
+  errorMessage:   "Sorry, I'm having a little trouble right now. Please try again in a moment!",
+  placeholder:    "Type your message...",
+  footerText:     "Powered by Replai",
+  statusText:     "Online",
+
+  // -- SIZE (pixels) --
+  chatWidth:      370,              // Chat window width  (300-500)
+  chatHeight:     520,              // Chat window height (380-700)
+  bubbleSize:     60,               // Floating button size (48-80)
+
+  // -- POSITION --
+  bottomOffset:   28,               // Distance from bottom of screen (px)
+  rightOffset:    28,               // Distance from right of screen (px)
+
+  // -- CONNECTION --
+  webhookUrl:     "https://api.baapofai.com/webhook/saree-demo",
+
+};
+
+// ============================================================
+//  END OF CLIENT CONFIG - DO NOT EDIT BELOW THIS LINE
+// ============================================================
+
+(function () {
+
+  // Load Google Fonts into main document (Shadow DOM cannot load fonts itself)
+  var fontUrls = [
+    "https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+  ];
+  var fontMap = {
+    "'Inter', sans-serif":   "Inter",
+    "'Poppins', sans-serif": "Poppins",
+    "'Nunito', sans-serif":  "Nunito",
+    "'Lato', sans-serif":    "Lato",
+  };
+  var extraFont = fontMap[CLIENT.font];
+  if (extraFont) {
+    fontUrls.push("https://fonts.googleapis.com/css2?family=" + extraFont + ":wght@300;400;500;600&display=swap");
+  }
+  fontUrls.forEach(function(href) {
+    if (!document.querySelector('link[href="' + href + '"]')) {
+      var l = document.createElement("link");
+      l.rel = "stylesheet"; l.href = href;
+      document.head.appendChild(l);
+    }
+  });
+
+  // Host element - sits in client DOM but is a zero-size invisible container
+  var host = document.createElement("div");
+  host.id = "ai-widget-host";
+  host.style.cssText = [
+    "position:fixed",
+    "bottom:0",
+    "right:0",
+    "width:0",
+    "height:0",
+    "z-index:2147483647",
+    "overflow:visible",
+    "border:none",
+    "padding:0",
+    "margin:0",
+    "pointer-events:none",
+    "background:transparent"
+  ].join(";");
+  document.body.appendChild(host);
+
+  // Shadow DOM - client CSS cannot reach inside here
+  var shadow = host.attachShadow({ mode: "closed" });
+
+  // All widget CSS - completely isolated
+  var style = document.createElement("style");
+  style.textContent = "\n"
+    + "*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n"
+
+    + "#toggle {\n"
+    + "  position: fixed;\n"
+    + "  bottom: " + CLIENT.bottomOffset + "px;\n"
+    + "  right: " + CLIENT.rightOffset + "px;\n"
+    + "  width: " + CLIENT.bubbleSize + "px;\n"
+    + "  height: " + CLIENT.bubbleSize + "px;\n"
+    + "  border-radius: 50%;\n"
+    + "  background: " + CLIENT.primaryColor + ";\n"
+    + "  border: none;\n"
+    + "  cursor: pointer;\n"
+    + "  display: flex;\n"
+    + "  align-items: center;\n"
+    + "  justify-content: center;\n"
+    + "  z-index: 2147483647;\n"
+    + "  overflow: hidden;\n"
+    + "  pointer-events: all;\n"
+    + "  transition: transform .25s cubic-bezier(.34,1.56,.64,1);\n"
+    + "  animation: w-pulse 2.5s ease-out infinite;\n"
+    + "}\n"
+
+    + "@keyframes w-pulse {\n"
+    + "  0%   { box-shadow: 0 4px 24px rgba(0,0,0,.28), 0 0 0 0px rgba(0,180,216,.4); }\n"
+    + "  70%  { box-shadow: 0 4px 24px rgba(0,0,0,.28), 0 0 0 14px rgba(0,180,216,0); }\n"
+    + "  100% { box-shadow: 0 4px 24px rgba(0,0,0,.28), 0 0 0 0px rgba(0,180,216,0); }\n"
+    + "}\n"
+
+    + "#toggle:hover { transform: scale(1.1); }\n"
+    + ".icon-chat  { display: block; }\n"
+    + ".icon-close { display: none; }\n"
+    + "#toggle.open .icon-chat  { display: none; }\n"
+    + "#toggle.open .icon-close { display: block; }\n"
+
+    + "#toggle::after {\n"
+    + "  content: '';\n"
+    + "  position: absolute;\n"
+    + "  top: 4px; right: 4px;\n"
+    + "  width: 12px; height: 12px;\n"
+    + "  background: #EF476F;\n"
+    + "  border-radius: 50%;\n"
+    + "  border: 2px solid white;\n"
+    + "  animation: w-dot-pop .4s 1.5s cubic-bezier(.34,1.56,.64,1) both;\n"
+    + "}\n"
+    + "@keyframes w-dot-pop { from { transform: scale(0); } to { transform: scale(1); } }\n"
+    + "#toggle.open::after { display: none; }\n"
+
+    + "#window {\n"
+    + "  position: fixed;\n"
+    + "  bottom: " + (CLIENT.bottomOffset + CLIENT.bubbleSize + 12) + "px;\n"
+    + "  right: " + CLIENT.rightOffset + "px;\n"
+    + "  width: " + CLIENT.chatWidth + "px;\n"
+    + "  height: " + CLIENT.chatHeight + "px;\n"
+    + "  background: white;\n"
+    + "  border-radius: 20px;\n"
+    + "  box-shadow: 0 20px 60px rgba(0,0,0,.18), 0 4px 16px rgba(0,0,0,.08);\n"
+    + "  display: flex;\n"
+    + "  flex-direction: column;\n"
+    + "  overflow: hidden;\n"
+    + "  z-index: 2147483646;\n"
+    + "  pointer-events: none;\n"
+    + "  transform: scale(.85) translateY(20px);\n"
+    + "  transform-origin: bottom right;\n"
+    + "  opacity: 0;\n"
+    + "  transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .25s;\n"
+    + "  font-family: " + CLIENT.font + ";\n"
+    + "  font-size: 16px;\n"
+    + "  line-height: 1.5;\n"
+    + "  color: #1A202C;\n"
+    + "}\n"
+    + "#window.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }\n"
+
+    + ".header {\n"
+    + "  background: " + CLIENT.primaryColor + ";\n"
+    + "  padding: 14px 18px;\n"
+    + "  display: flex;\n"
+    + "  align-items: center;\n"
+    + "  gap: 12px;\n"
+    + "  flex-shrink: 0;\n"
+    + "}\n"
+
+    + ".avatar {\n"
+    + "  width: 40px; height: 40px;\n"
+    + "  border-radius: 50%;\n"
+    + "  background: " + CLIENT.accentColor + ";\n"
+    + "  display: flex; align-items: center; justify-content: center;\n"
+    + "  font-family: 'Syne', sans-serif;\n"
+    + "  font-size: .9rem; font-weight: 800;\n"
+    + "  color: " + CLIENT.primaryColor + ";\n"
+    + "  flex-shrink: 0;\n"
+    + "  position: relative;\n"
+    + "  overflow: hidden;\n"
+    + "}\n"
+    + ".avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none; }\n"
+    + ".avatar img.show { display: block; }\n"
+    + ".avatar::after {\n"
+    + "  content: '';\n"
+    + "  position: absolute;\n"
+    + "  bottom: 1px; right: 1px;\n"
+    + "  width: 10px; height: 10px;\n"
+    + "  background: #06D6A0;\n"
+    + "  border-radius: 50%;\n"
+    + "  border: 2px solid " + CLIENT.primaryColor + ";\n"
+    + "  z-index: 1;\n"
+    + "}\n"
+
+    + ".header-info { flex: 1; }\n"
+    + ".header-name { font-family: 'Syne', sans-serif; font-size: .92rem; font-weight: 700; color: white; }\n"
+    + ".header-status { font-size: .7rem; color: #06D6A0; font-weight: 500; }\n"
+
+    + ".close-btn {\n"
+    + "  background: rgba(255,255,255,.1);\n"
+    + "  border: none;\n"
+    + "  color: rgba(255,255,255,.7);\n"
+    + "  width: 28px; height: 28px;\n"
+    + "  border-radius: 50%;\n"
+    + "  cursor: pointer;\n"
+    + "  display: flex; align-items: center; justify-content: center;\n"
+    + "  font-size: 1rem; line-height: 1;\n"
+    + "  transition: background .2s;\n"
+    + "  pointer-events: all;\n"
+    + "}\n"
+    + ".close-btn:hover { background: rgba(255,255,255,.2); color: white; }\n"
+
+    + ".messages {\n"
+    + "  flex: 1;\n"
+    + "  overflow-y: auto;\n"
+    + "  padding: 14px;\n"
+    + "  display: flex;\n"
+    + "  flex-direction: column;\n"
+    + "  gap: 10px;\n"
+    + "  background: #FAFBFC;\n"
+    + "  scroll-behavior: smooth;\n"
+    + "}\n"
+    + ".messages::-webkit-scrollbar { width: 4px; }\n"
+    + ".messages::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 2px; }\n"
+
+    + ".msg { display: flex; gap: 8px; align-items: flex-end; animation: w-msg-in .3s cubic-bezier(.34,1.56,.64,1) both; }\n"
+    + "@keyframes w-msg-in { from { opacity:0; transform: translateY(10px) scale(.95); } to { opacity:1; transform: translateY(0) scale(1); } }\n"
+    + ".msg.user { flex-direction: row-reverse; }\n"
+
+    + ".msg-av {\n"
+    + "  width: 28px; height: 28px;\n"
+    + "  border-radius: 50%;\n"
+    + "  background: " + CLIENT.accentColor + ";\n"
+    + "  display: flex; align-items: center; justify-content: center;\n"
+    + "  font-family: 'Syne', sans-serif;\n"
+    + "  font-size: .6rem; font-weight: 800;\n"
+    + "  color: " + CLIENT.primaryColor + ";\n"
+    + "  flex-shrink: 0;\n"
+    + "  overflow: hidden;\n"
+    + "}\n"
+    + ".msg-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }\n"
+    + ".msg-av.has-logo { background: transparent; }\n"
+    + ".msg.user .msg-av { background: " + CLIENT.primaryColor + "; color: white; }\n"
+
+    + ".msg-wrap { display: flex; flex-direction: column; max-width: 78%; }\n"
+    + ".msg.user .msg-wrap { align-items: flex-end; }\n"
+
+    + ".bubble {\n"
+    + "  padding: 10px 14px;\n"
+    + "  border-radius: 18px;\n"
+    + "  font-size: .875rem;\n"
+    + "  line-height: 1.55;\n"
+    + "  color: #1A202C;\n"
+    + "  background: white;\n"
+    + "  box-shadow: 0 1px 4px rgba(0,0,0,.07);\n"
+    + "  border-bottom-left-radius: 4px;\n"
+    + "  word-wrap: break-word;\n"
+    + "  font-family: " + CLIENT.font + ";\n"
+    + "}\n"
+    + ".msg.user .bubble { background: " + CLIENT.primaryColor + "; color: white; border-bottom-left-radius: 18px; border-bottom-right-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.2); }\n"
+    + ".msg-time { font-size: .63rem; color: #A0AEC0; margin-top: 3px; font-family: " + CLIENT.font + "; }\n"
+    + ".msg.user .msg-time { text-align: right; }\n"
+
+    + ".typing { display: flex; align-items: center; gap: 8px; animation: w-msg-in .3s both; }\n"
+    + ".typing-dots { background: white; box-shadow: 0 1px 4px rgba(0,0,0,.07); border-radius: 18px; border-bottom-left-radius: 4px; padding: 12px 16px; display: flex; gap: 4px; align-items: center; }\n"
+    + ".typing-dots span { width: 7px; height: 7px; background: " + CLIENT.accentColor + "; border-radius: 50%; animation: w-bounce 1.2s infinite; }\n"
+    + ".typing-dots span:nth-child(2) { animation-delay: .2s; }\n"
+    + ".typing-dots span:nth-child(3) { animation-delay: .4s; }\n"
+    + "@keyframes w-bounce { 0%,60%,100% { transform:translateY(0); opacity:.4; } 30% { transform:translateY(-5px); opacity:1; } }\n"
+
+    + ".input-area { padding: 10px 14px; background: white; border-top: 1px solid #EDF2F7; display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0; }\n"
+
+    + "textarea {\n"
+    + "  flex: 1;\n"
+    + "  border: 1.5px solid #E2E8F0;\n"
+    + "  border-radius: 12px;\n"
+    + "  padding: 9px 14px;\n"
+    + "  font-family: " + CLIENT.font + ";\n"
+    + "  font-size: .875rem;\n"
+    + "  color: #1A202C;\n"
+    + "  resize: none;\n"
+    + "  outline: none;\n"
+    + "  max-height: 100px;\n"
+    + "  min-height: 40px;\n"
+    + "  line-height: 1.5;\n"
+    + "  transition: border-color .2s;\n"
+    + "  background: #FAFBFC;\n"
+    + "}\n"
+    + "textarea:focus { border-color: " + CLIENT.accentColor + "; background: white; }\n"
+    + "textarea::placeholder { color: #A0AEC0; }\n"
+
+    + ".send-btn { width: 40px; height: 40px; border-radius: 10px; background: " + CLIENT.primaryColor + "; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s, transform .15s; flex-shrink: 0; pointer-events: all; }\n"
+    + ".send-btn:hover { background: " + CLIENT.accentColor + "; transform: scale(1.05); }\n"
+    + ".send-btn:active { transform: scale(.95); }\n"
+    + ".send-btn:disabled { background: #E2E8F0; cursor: not-allowed; transform: none; }\n"
+
+    + ".footer { padding: 5px 14px 9px; text-align: center; font-size: .63rem; color: #808080; background: white; letter-spacing: .03em; font-family: " + CLIENT.font + "; }\n"
+
+    + "@media (max-width: 420px) { #window { width: calc(100vw - 24px); right: 12px; } }\n";
+
+  shadow.appendChild(style);
+
+  // Build HTML inside Shadow DOM
+  var wrap = document.createElement("div");
+  wrap.innerHTML = ''
+    + '<button id="toggle" aria-label="Open chat">'
+    +   '<svg class="icon-chat" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+    +   '<svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+    + '</button>'
+    + '<div id="window">'
+    +   '<div class="header">'
+    +     '<div class="avatar"><img id="logo-img" src="" alt=""/><span id="initials">AI</span></div>'
+    +     '<div class="header-info">'
+    +       '<div class="header-name" id="bot-name">Aria</div>'
+    +       '<div class="header-status" id="bot-status">Online</div>'
+    +     '</div>'
+    +     '<button class="close-btn" id="close-btn">&#x2715;</button>'
+    +   '</div>'
+    +   '<div class="messages" id="messages"></div>'
+    +   '<div class="input-area">'
+    +     '<textarea id="chat-input" rows="1" placeholder="Type your message..."></textarea>'
+    +     '<button class="send-btn" id="send-btn">'
+    +       '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'
+    +     '</button>'
+    +   '</div>'
+    +   '<div class="footer" id="footer">Powered by Replai</div>'
+    + '</div>';
+  shadow.appendChild(wrap);
+
+  // Apply config to DOM elements
+  shadow.getElementById("bot-name").textContent    = CLIENT.name;
+  shadow.getElementById("initials").textContent    = CLIENT.initials;
+  shadow.getElementById("bot-status").textContent  = CLIENT.statusText;
+  shadow.getElementById("chat-input").placeholder  = CLIENT.placeholder;
+  shadow.getElementById("footer").textContent      = CLIENT.footerText;
+
+  if (CLIENT.logo) {
+    var logoImg = shadow.getElementById("logo-img");
+    logoImg.src = CLIENT.logo;
+    logoImg.classList.add("show");
+    shadow.getElementById("initials").style.display = "none";
+    shadow.querySelector(".avatar").style.background = "transparent";
+  }
+
+  // Widget logic
+  var toggleBtn = shadow.getElementById("toggle");
+  var chatWin   = shadow.getElementById("window");
+  var closeBtn  = shadow.getElementById("close-btn");
+  var input     = shadow.getElementById("chat-input");
+  var sendBtn   = shadow.getElementById("send-btn");
+  var messages  = shadow.getElementById("messages");
+
+  var isOpen = false, isWaiting = false, welcomed = false;
+
+  function toggleChat() {
+    isOpen = !isOpen;
+    chatWin.classList.toggle("open", isOpen);
+    toggleBtn.classList.toggle("open", isOpen);
+    if (isOpen && !welcomed) {
+      setTimeout(function() { addMsg("bot", CLIENT.welcomeMessage); }, 400);
+      welcomed = true;
+      input.focus();
+    }
+  }
+
+  toggleBtn.addEventListener("click", toggleChat);
+  closeBtn.addEventListener("click", toggleChat);
+
+  function getTime() {
+    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function addMsg(sender, text) {
+    var isUser = sender === "user";
+    var msgWrap = document.createElement("div");
+    msgWrap.className = "msg " + (isUser ? "user" : "bot");
+
+    var av = document.createElement("div");
+    av.className = "msg-av";
+    if (!isUser && CLIENT.logo) {
+      var img = document.createElement("img");
+      img.src = CLIENT.logo;
+      av.style.background = "transparent";
+      av.appendChild(img);
+    } else {
+      if (isUser) {
+        av.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>';
+      } else {
+        av.textContent = CLIENT.initials;
+      }
+    }
+
+    var bw = document.createElement("div");
+    bw.className = "msg-wrap";
+    var b = document.createElement("div");
+    b.className = "bubble";
+    b.textContent = text;
+    var t = document.createElement("div");
+    t.className = "msg-time";
+    t.textContent = getTime();
+    bw.appendChild(b);
+    bw.appendChild(t);
+
+    msgWrap.appendChild(av);
+    msgWrap.appendChild(bw);
+    messages.appendChild(msgWrap);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function showTyping() {
+    var w = document.createElement("div");
+    w.className = "typing"; w.id = "typing";
+    var av = document.createElement("div");
+    av.className = "msg-av";
+    if (CLIENT.logo) {
+      var tImg = document.createElement("img");
+      tImg.src = CLIENT.logo;
+      av.style.background = "transparent";
+      av.appendChild(tImg);
+    } else {
+      av.textContent = CLIENT.initials;
+    }
+    var d = document.createElement("div");
+    d.className = "typing-dots";
+    d.innerHTML = "<span></span><span></span><span></span>";
+    w.appendChild(av); w.appendChild(d);
+    messages.appendChild(w);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function hideTyping() {
+    var el = shadow.getElementById("typing");
+    if (el) el.remove();
+  }
+
+  async function sendMessage() {
+    var text = input.value.trim();
+    if (!text || isWaiting) return;
+    addMsg("user", text);
+    input.value = "";
+    input.style.height = "auto";
+    isWaiting = true;
+    sendBtn.disabled = true;
+    showTyping();
+    try {
+      var res = await fetch(CLIENT.webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text })
+      });
+      var data = await res.json();
+      hideTyping();
+      addMsg("bot", data.reply || data.message || data.response || "I received your message!");
+    } catch (err) {
+      hideTyping();
+      addMsg("bot", CLIENT.errorMessage);
+    }
+    isWaiting = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  input.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  input.addEventListener("input", function() {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 100) + "px";
+  });
+
+})();
+</script>
+
+</body>
+</html>
