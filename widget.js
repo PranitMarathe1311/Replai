@@ -408,20 +408,21 @@ const CLIENT = {
     sendBtn.disabled = true;
     showTyping();
     try {
-      const res  = await fetch(CLIENT.webhookUrl, {
+      const res = await fetch(CLIENT.webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-        message: text,
-        history: conversationHistory }),
+          message: text,
+          history: conversationHistory
+        }),
       });
       const data = await res.json();
       hideTyping();
+      conversationHistory.push({ role: "user", content: text });
+      conversationHistory.push({ role: "assistant", content: data.reply });
       addMsg('bot', data.reply || data.message || data.response || 'I received your message!');
     } catch {
       hideTyping();
-      conversationHistory.push({ role: "user", content: text });
-      conversationHistory.push({ role: "assistant", content: data.reply });
       addMsg('bot', CLIENT.errorMessage);
     }
     isWaiting = false;
