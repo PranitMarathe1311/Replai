@@ -5,9 +5,9 @@
 const CLIENT = {
 
   // -- ASSISTANT IDENTITY --
-  name:            "Aria",          // Name shown in chat header
+  name:            "Sanvi",         // Name shown in chat header
   initials:        "AI",            // Shown in avatar circle if no logo
-  logo:            "",              // Direct image URL (leave "" to use initials)
+  logo:            "rangsarees.jpeg", // Direct image URL (leave "" to use initials)
                                     // e.g. "https://example.com/logo.png"
 
   // -- COLORS --
@@ -21,11 +21,11 @@ const CLIENT = {
   font:            "'DM Sans', sans-serif",
 
   // -- MESSAGES --
-  welcomeMessage:  "Hi there! 👋 I'm Aria, your AI assistant. How can I help you today?",
-  errorMessage:    "Sorry, I'm having a little trouble right now. Please try again in a moment! 🙏",
+  welcomeMessage:  "Hi there! I'm Sanvi, your AI assistant. How can I help you today?",
+  errorMessage:    "Sorry, I'm having a little trouble right now. Please try again in a moment!",
   placeholder:     "Type your message...",
-  footerText:      "Powered by AI",
-  statusText:      "● Online — replies instantly",
+  footerText:      "Powered by Replai",
+  statusText:      "Online",
 
   // -- SIZE (pixels) --
   chatWidth:       370,             // Chat window width  (recommended: 300–500)
@@ -37,7 +37,7 @@ const CLIENT = {
   rightOffset:     28,              // Distance from right of screen (px)
 
   // -- CONNECTION --
-  webhookUrl:      "YOUR_WEBHOOK_URL_HERE",
+  webhookUrl:      "https://api.baapofai.com/webhook/saree-demo",
 
 };
 
@@ -163,6 +163,7 @@ const CLIENT = {
       flex-shrink: 0; position: relative; overflow: hidden;
     }
     .w-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none; }
+    .w-avatar img.show { display: block; }
     .w-avatar::after {
       content: ''; position: absolute;
       bottom: 1px; right: 1px;
@@ -201,7 +202,7 @@ const CLIENT = {
       font-family: 'Syne', sans-serif; font-size: .6rem; font-weight: 800;
       color: var(--primary); flex-shrink: 0; overflow: hidden;
     }
-    .w-msg-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .w-msg-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
     .w-msg.user .w-msg-avatar { background: var(--primary); color: white; }
     .w-msg-wrap { display: flex; flex-direction: column; max-width: 78%; }
     .w-msg.user .w-msg-wrap { align-items: flex-end; }
@@ -262,7 +263,7 @@ const CLIENT = {
     #w-send:disabled { background: #E2E8F0; cursor: not-allowed; transform: none; }
     .w-footer {
       padding: 5px 14px 9px; text-align: center;
-      font-size: .63rem; color: #CBD5E0; background: white; letter-spacing: .03em;
+      font-size: .63rem; color: #808080; background: white; letter-spacing: .03em;
     }
     @media (max-width: 420px) { #w-window { width: calc(100vw - 24px); right: 12px; } }
   `;
@@ -302,8 +303,9 @@ const CLIENT = {
   if (CLIENT.logo) {
     const img = shadow.getElementById('w-logo');
     img.src = CLIENT.logo;
-    img.style.display = 'block';
+    img.classList.add('show');
     shadow.getElementById('w-initials').style.display = 'none';
+    shadow.querySelector('.w-avatar').style.background = 'transparent';
   }
 
   const toggle   = shadow.getElementById('w-toggle');
@@ -341,9 +343,14 @@ const CLIENT = {
     if (!isUser && CLIENT.logo) {
       const img = document.createElement('img');
       img.src = CLIENT.logo;
+      av.style.background = 'transparent';
       av.appendChild(img);
     } else {
-      av.textContent = isUser ? 'You' : CLIENT.initials;
+      if (isUser) {
+        av.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>';
+      } else {
+        av.textContent = CLIENT.initials;
+      }
     }
     const bw = document.createElement('div');
     bw.className = 'w-msg-wrap';
@@ -366,7 +373,14 @@ const CLIENT = {
     w.className = 'w-typing'; w.id = 'w-typing';
     const av = document.createElement('div');
     av.className = 'w-msg-avatar';
-    av.textContent = CLIENT.initials;
+    if (CLIENT.logo) {
+      const tImg = document.createElement('img');
+      tImg.src = CLIENT.logo;
+      av.style.background = 'transparent';
+      av.appendChild(tImg);
+    } else {
+      av.textContent = CLIENT.initials;
+    }
     const d = document.createElement('div');
     d.className = 'w-typing-dots';
     d.innerHTML = '<span></span><span></span><span></span>';
@@ -374,6 +388,7 @@ const CLIENT = {
     messages.appendChild(w);
     messages.scrollTop = messages.scrollHeight;
   }
+
   function hideTyping() {
     const el = shadow.getElementById('w-typing');
     if (el) el.remove();
@@ -396,7 +411,7 @@ const CLIENT = {
       });
       const data = await res.json();
       hideTyping();
-      addMsg('bot', data.reply || data.message || data.response || 'Got it!');
+      addMsg('bot', data.reply || data.message || data.response || 'I received your message!');
     } catch {
       hideTyping();
       addMsg('bot', CLIENT.errorMessage);
