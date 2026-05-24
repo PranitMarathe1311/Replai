@@ -414,7 +414,8 @@ const CLIENT = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           message: text,
-          history: conversationHistory
+          history: conversationHistory,
+          lead_already_captured: leadAlreadyCaptured
         }),
       });
       const data = await res.json();
