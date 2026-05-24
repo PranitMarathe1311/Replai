@@ -420,6 +420,10 @@ const CLIENT = {
       hideTyping();
       conversationHistory.push({ role: "user", content: text });
       conversationHistory.push({ role: "assistant", content: data.reply });
+
+      if (data.lead_captured === true) {
+        conversationHistory = [];
+      }
       addMsg('bot', data.reply || data.message || data.response || 'I received your message!');
     } catch {
       hideTyping();
