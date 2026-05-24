@@ -318,6 +318,7 @@ const CLIENT = {
   let isOpen = false, isWaiting = false, welcomed = false;
 
   let conversationHistory = [];
+  let leadAlreadyCaptured = false;
 
   function toggleChat() {
     isOpen = !isOpen;
@@ -421,9 +422,11 @@ const CLIENT = {
       conversationHistory.push({ role: "user", content: text });
       conversationHistory.push({ role: "assistant", content: data.reply });
 
-      if (data.lead_captured === true) {
+      if (data.lead_captured === true && !leadAlreadyCaptured) {
+        leadAlreadyCaptured = true;
         conversationHistory = [];
       }
+      
       addMsg('bot', data.reply || data.message || data.response || 'I received your message!');
     } catch {
       hideTyping();
