@@ -5,19 +5,15 @@
 const CLIENT = {
 
   // -- ASSISTANT IDENTITY --
-  name:            "Sanvi",         // Name shown in chat header
-  initials:        "AI",            // Shown in avatar circle if no logo
-  logo:            "rangsarees.jpeg", // Direct image URL (leave "" to use initials)
-                                    // e.g. "https://example.com/logo.png"
+  name:            "Sanvi",
+  initials:        "AI",
+  logo:            "rangsarees.jpeg",
 
   // -- COLORS --
-  primaryColor:    "#0D1B2A",       // Header, bubble button, user messages
-  accentColor:     "#00B4D8",       // Glow ring, typing dots, focus borders
+  primaryColor:    "#C9A84C",
+  accentColor:     "#00B4D8",
 
   // -- FONT --
-  // Options: "'DM Sans', sans-serif" | "'Inter', sans-serif"  |
-  //          "'Poppins', sans-serif" | "'Nunito', sans-serif" |
-  //          "'Lato', sans-serif"    | "Georgia, serif"
   font:            "'DM Sans', sans-serif",
 
   // -- MESSAGES --
@@ -28,13 +24,13 @@ const CLIENT = {
   statusText:      "Online",
 
   // -- SIZE (pixels) --
-  chatWidth:       370,             // Chat window width  (recommended: 300–500)
-  chatHeight:      520,             // Chat window height (recommended: 380–700)
-  bubbleSize:      60,              // Floating button size (recommended: 48–80)
+  chatWidth:       370,
+  chatHeight:      520,
+  bubbleSize:      60,
 
   // -- POSITION --
-  bottomOffset:    28,              // Distance from bottom of screen (px)
-  rightOffset:     28,              // Distance from right of screen (px)
+  bottomOffset:    28,
+  rightOffset:     28,
 
   // -- CONNECTION --
   webhookUrl:      "https://api.baapofai.com/webhook/saree-demo",
@@ -94,40 +90,107 @@ const CLIENT = {
       --right:       ${CLIENT.rightOffset}px;
       font-family: var(--font);
     }
-    #w-toggle {
+
+    /* === ROBOT LAUNCHER === */
+    #w-launcher {
       position: fixed;
-      bottom: var(--bottom); right: var(--right);
-      width: var(--bubble-size); height: var(--bubble-size);
+      bottom: var(--bottom);
+      right: var(--right);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      z-index: 2147483647;
+      pointer-events: all;
+    }
+    #w-launcher.open { pointer-events: none; }
+    #w-label {
+      background: var(--primary);
+      color: white;
+      padding: 7px 13px;
+      border-radius: 18px 18px 4px 18px;
+      font-family: var(--font);
+      font-size: .78rem;
+      font-weight: 500;
+      white-space: nowrap;
+      box-shadow: 0 2px 10px rgba(0,0,0,.18);
+      animation: label-float 2.5s ease-in-out infinite;
+      cursor: pointer;
+    }
+    #w-label.hidden { display: none; }
+    #w-arrow {
+      color: var(--accent);
+      font-size: 1.1rem;
+      text-align: right;
+      margin-right: 20px;
+      animation: arrow-bounce 1s ease-in-out infinite;
+      cursor: pointer;
+    }
+    #w-arrow.hidden { display: none; }
+    #w-toggle {
+      width: var(--bubble-size);
+      height: var(--bubble-size);
       border-radius: 50%;
       background: var(--primary);
-      border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      z-index: 2147483647;
-      overflow: hidden;
-      pointer-events: all;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+      position: relative;
+      animation: robot-float 2.5s ease-in-out infinite, pulse 2.5s ease-out infinite;
       transition: transform .25s cubic-bezier(.34,1.56,.64,1);
-      animation: pulse 2.5s ease-out infinite;
-    }
-    @keyframes pulse {
-      0%   { box-shadow: 0 4px 24px rgba(0,0,0,.25), 0 0 0 0 rgba(0,180,216,.35); }
-      70%  { box-shadow: 0 4px 24px rgba(0,0,0,.25), 0 0 0 14px rgba(0,180,216,0); }
-      100% { box-shadow: 0 4px 24px rgba(0,0,0,.25), 0 0 0 0 rgba(0,180,216,0); }
     }
     #w-toggle:hover { transform: scale(1.1); }
-    #w-toggle::after {
-      content: '';
+    #w-toggle.open { animation: none; }
+    #w-toggle.open #w-robot { display: none; }
+    #w-toggle.open .icon-close { display: flex !important; }
+
+    /* notification dot */
+    #w-dot {
       position: absolute;
-      top: 4px; right: 4px;
-      width: 12px; height: 12px;
+      top: 3px; right: 3px;
+      width: 13px; height: 13px;
       background: #EF476F;
       border-radius: 50%;
-      border: 2px solid white;
+      border: 2px solid var(--primary);
       animation: dot-pop .4s 1.5s cubic-bezier(.34,1.56,.64,1) both;
     }
+    #w-toggle.open #w-dot { display: none; }
+
+    @keyframes robot-float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+    @keyframes pulse {
+      0%   { box-shadow: 0 4px 24px rgba(0,0,0,.25), 0 0 0 0 rgba(0,180,216,.4); }
+      70%  { box-shadow: 0 4px 24px rgba(0,0,0,.25), 0 0 0 16px rgba(0,180,216,0); }
+      100% { box-shadow: 0 4px 24px rgba(0,0,0,.25), 0 0 0 0 rgba(0,180,216,0); }
+    }
+    @keyframes label-float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-4px); }
+    }
+    @keyframes arrow-bounce {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(5px); }
+    }
     @keyframes dot-pop { from { transform: scale(0); } to { transform: scale(1); } }
-    #w-toggle.open::after { display: none; }
-    #w-toggle.open .icon-chat  { display: none; }
-    #w-toggle.open .icon-close { display: block !important; }
+    @keyframes arm-wave {
+      0%,100% { transform: rotate(0deg); }
+      25%      { transform: rotate(22deg); }
+      75%      { transform: rotate(-10deg); }
+    }
+    #w-robot-arm { transform-origin: 27px 15px; animation: arm-wave 1.2s ease-in-out infinite; }
+
+    .icon-close {
+      display: none !important;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* === CHAT WINDOW === */
     #w-window {
       position: fixed;
       bottom: calc(var(--bottom) + var(--bubble-size) + 12px);
@@ -229,11 +292,11 @@ const CLIENT = {
     }
     .w-typing-dots span {
       width: 7px; height: 7px; background: var(--accent);
-      border-radius: 50%; animation: bounce 1.2s infinite;
+      border-radius: 50%; animation: tdot 1.2s infinite;
     }
     .w-typing-dots span:nth-child(2) { animation-delay: .2s; }
     .w-typing-dots span:nth-child(3) { animation-delay: .4s; }
-    @keyframes bounce {
+    @keyframes tdot {
       0%, 60%, 100% { transform: translateY(0); opacity: .4; }
       30%            { transform: translateY(-5px); opacity: 1; }
     }
@@ -272,10 +335,30 @@ const CLIENT = {
   const root = document.createElement('div');
   root.id = 'w-root';
   root.innerHTML = `
-    <button id="w-toggle" aria-label="Open chat">
-      <svg class="icon-chat" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <div id="w-launcher">
+      <div id="w-label">Meet Sanvi, your AI ✨</div>
+      <div id="w-arrow">↓</div>
+      <button id="w-toggle" aria-label="Open chat">
+        <svg id="w-robot" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="9" y="12" width="18" height="14" rx="4" fill="#00B4D8"/>
+          <rect x="13" y="16" width="3" height="3" rx="1.5" fill="white"/>
+          <rect x="20" y="16" width="3" height="3" rx="1.5" fill="white"/>
+          <rect x="14" y="21" width="8" height="2" rx="1" fill="white"/>
+          <rect x="16" y="8" width="4" height="4" rx="2" fill="#00B4D8"/>
+          <rect x="17.5" y="6" width="1" height="3" rx="0.5" fill="#00B4D8"/>
+          <g id="w-robot-arm">
+            <rect x="27" y="14" width="3" height="8" rx="1.5" fill="#00B4D8"/>
+            <circle cx="28.5" cy="23" r="1.5" fill="#00B4D8"/>
+          </g>
+          <rect x="6" y="14" width="3" height="8" rx="1.5" fill="#00B4D8"/>
+          <rect x="12" y="26" width="4" height="5" rx="2" fill="#00B4D8"/>
+          <rect x="20" y="26" width="4" height="5" rx="2" fill="#00B4D8"/>
+        </svg>
+        <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <div id="w-dot"></div>
+      </button>
+    </div>
+
     <div id="w-window">
       <div class="w-header">
         <div class="w-avatar">
@@ -308,7 +391,10 @@ const CLIENT = {
     shadow.querySelector('.w-avatar').style.background = 'transparent';
   }
 
+  const launcher = shadow.getElementById('w-launcher');
   const toggle   = shadow.getElementById('w-toggle');
+  const label    = shadow.getElementById('w-label');
+  const arrow    = shadow.getElementById('w-arrow');
   const chatWin  = shadow.getElementById('w-window');
   const closeBtn = shadow.getElementById('w-close');
   const input    = shadow.getElementById('w-input');
@@ -316,7 +402,6 @@ const CLIENT = {
   const messages = shadow.getElementById('w-messages');
 
   let isOpen = false, isWaiting = false, welcomed = false;
-
   let conversationHistory = [];
   let leadAlreadyCaptured = false;
 
@@ -324,13 +409,19 @@ const CLIENT = {
     isOpen = !isOpen;
     chatWin.classList.toggle('open', isOpen);
     toggle.classList.toggle('open', isOpen);
+    launcher.classList.toggle('open', isOpen);
+    label.classList.toggle('hidden', isOpen);
+    arrow.classList.toggle('hidden', isOpen);
     if (isOpen && !welcomed) {
       setTimeout(() => addMsg('bot', CLIENT.welcomeMessage), 400);
       welcomed = true;
       input.focus();
     }
   }
+
   toggle.addEventListener('click', toggleChat);
+  label.addEventListener('click', toggleChat);
+  arrow.addEventListener('click', toggleChat);
   closeBtn.addEventListener('click', toggleChat);
 
   function getTime() {
@@ -397,8 +488,6 @@ const CLIENT = {
     if (el) el.remove();
   }
 
-  
-
   async function sendMessage() {
     const text = input.value.trim();
     if (!text || isWaiting) return;
@@ -412,7 +501,7 @@ const CLIENT = {
       const res = await fetch(CLIENT.webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           message: text,
           history: conversationHistory,
           lead_already_captured: leadAlreadyCaptured
@@ -422,12 +511,10 @@ const CLIENT = {
       hideTyping();
       conversationHistory.push({ role: "user", content: text });
       conversationHistory.push({ role: "assistant", content: data.reply });
-
       if (data.lead_captured === true && !leadAlreadyCaptured) {
         leadAlreadyCaptured = true;
         conversationHistory = [];
       }
-      
       addMsg('bot', data.reply || data.message || data.response || 'I received your message!');
     } catch {
       hideTyping();
