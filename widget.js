@@ -339,21 +339,7 @@ const CLIENT = {
       <div id="w-label">Meet Sanvi, your AI ✨</div>
       <div id="w-arrow">↓</div>
       <button id="w-toggle" aria-label="Open chat">
-        <svg id="w-robot" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="9" y="12" width="18" height="14" rx="4" fill="#00B4D8"/>
-          <rect x="13" y="16" width="3" height="3" rx="1.5" fill="white"/>
-          <rect x="20" y="16" width="3" height="3" rx="1.5" fill="white"/>
-          <rect x="14" y="21" width="8" height="2" rx="1" fill="white"/>
-          <rect x="16" y="8" width="4" height="4" rx="2" fill="#00B4D8"/>
-          <rect x="17.5" y="6" width="1" height="3" rx="0.5" fill="#00B4D8"/>
-          <g id="w-robot-arm">
-            <rect x="27" y="14" width="3" height="8" rx="1.5" fill="#00B4D8"/>
-            <circle cx="28.5" cy="23" r="1.5" fill="#00B4D8"/>
-          </g>
-          <rect x="6" y="14" width="3" height="8" rx="1.5" fill="#00B4D8"/>
-          <rect x="12" y="26" width="4" height="5" rx="2" fill="#00B4D8"/>
-          <rect x="20" y="26" width="4" height="5" rx="2" fill="#00B4D8"/>
-        </svg>
+        <img id="w-robot" src="https://raw.githubusercontent.com/PranitMarathe1311/Replai/main/robot.gif" style="width:48px;height:48px;object-fit:contain;border-radius:50%;" />
         <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         <div id="w-dot"></div>
       </button>
