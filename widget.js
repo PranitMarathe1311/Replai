@@ -104,6 +104,7 @@ const CLIENT = {
       pointer-events: all;
     }
     #w-launcher.open { pointer-events: none; }
+    #w-launcher.open #w-toggle { pointer-events: all; }
     #w-label {
       background: var(--primary);
       color: white;
@@ -235,7 +236,7 @@ const CLIENT = {
       border: 2px solid var(--primary); z-index: 1;
     }
     .w-header-info { flex: 1; }
-    .w-header-name { font-family: 'Syne', sans-serif; font-size: .92rem; font-weight: 700; color: white; }
+    .w-header-name { font-family: 'Syne', sans-serif; font-size: .92rem; font-weight: 700; color: #1A202C; }
     .w-header-status { font-size: .7rem; color: #0E9464; font-weight: 500; }
     .w-close-btn {
       background: rgba(255,255,255,.1); border: none;
