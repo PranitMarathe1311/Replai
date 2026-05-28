@@ -447,7 +447,13 @@ function animateLabelCycle() {
   setTimeout(() => {
     // Swap text
     labelPhase = (labelPhase + 1) % labelMessages.length;
-    label.innerHTML = '<span id="w-label-spark" style="font-size:.8rem;animation:label-spin 3s linear infinite;flex-shrink:0;">✦</span>' + labelMessages[labelPhase];
+    label.innerHTML = '<span id="w-label-spark" style="font-size:.8rem;animation:label-spin 3s linear infinite;flex-shrink:0;">✦</span><span id="w-label-text">' + labelMessages[labelPhase] + '</span><span id="w-label-close">✕</span>';
+    shadow.getElementById('w-label-close').addEventListener('click', function(e) {
+      e.stopPropagation();
+      labelDismissed = true;
+      label.classList.add('dismissed');
+      arrow.classList.add('hidden');
+    });
 
     // Pop up
     label.style.transition = 'transform 0.42s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease';
