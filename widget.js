@@ -363,7 +363,7 @@ const CLIENT = {
   root.id = 'w-root';
   root.innerHTML = `
     <div id="w-launcher">
-      <div id="w-label"><span id="w-label-spark">✦</span>Have Questions? Ask AI</div>
+      <div id="w-label"><span id="w-label-spark">✦</span>Have Questions? Ask AI ✨</div>
       <div id="w-arrow">↓</div>
       <button id="w-toggle" aria-label="Open chat">
         <img id="w-robot" src="https://raw.githubusercontent.com/PranitMarathe1311/Replai/main/robot.gif" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;top:0;left:0;"/>
@@ -419,7 +419,7 @@ const CLIENT = {
 // ── Cycling label messages ──────────────────────────────────
 const labelMessages = [
   'Have Questions? Ask AI ✨',
-  'Sawaal hai? AI se poochho! 🌸',
+  'Sawaal hai? AI se poochho! ✨',
 ];
 let labelPhase = 0;
 
