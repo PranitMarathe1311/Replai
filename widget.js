@@ -389,6 +389,40 @@ const CLIENT = {
   const messages = shadow.getElementById('w-messages');
 
   let isOpen = false, isWaiting = false, welcomed = false;
+
+// ── Cycling label messages ──────────────────────────────────
+const labelMessages = [
+  'Have Questions? Ask AI ✨',
+  'Sawaal hai? AI se poochho! 🌸',
+];
+let labelPhase = 0;
+
+function animateLabelCycle() {
+  // Pop down
+  label.style.transition = 'transform 0.35s cubic-bezier(0.55,0,1,0.45), opacity 0.25s ease';
+  label.style.transform  = 'translateY(20px)';
+  label.style.opacity    = '0';
+
+  setTimeout(() => {
+    // Swap text
+    labelPhase = (labelPhase + 1) % labelMessages.length;
+    label.textContent = labelMessages[labelPhase];
+
+    // Pop up
+    label.style.transition = 'transform 0.42s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease';
+    label.style.transform  = 'translateY(0)';
+    label.style.opacity    = '1';
+
+    // Long pause after last message, 4s otherwise
+    const nextDelay = (labelPhase === labelMessages.length - 1) ? 9000 : 4000;
+    setTimeout(animateLabelCycle, nextDelay);
+  }, 1000); // 1s gap between pop-down and pop-up
+}
+
+// Kick off after 3s (first message stays visible for 4s)
+setTimeout(animateLabelCycle, 4000);
+// ────────────────────────────────────────────────────────────
+  
   let conversationHistory = [];
   let leadAlreadyCaptured = false;
 
