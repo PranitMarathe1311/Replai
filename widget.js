@@ -145,6 +145,20 @@ const CLIENT = {
       100% { transform: rotate(360deg); }
     }
     #w-label.hidden { display: none; }
+    #w-label.dismissed { display: none !important; }
+    #w-label-close {
+      font-size: .65rem;
+      font-weight: 700;
+      color: rgba(240,201,106,0.6);
+      margin-left: 6px;
+      padding: 1px 4px;
+      border-radius: 50%;
+      cursor: pointer;
+      line-height: 1;
+      transition: color .2s;
+      flex-shrink: 0;
+    }
+    #w-label-close:hover { color: #f0c96a; }
     #w-arrow {
       color: var(--accent);
       font-size: 1.1rem;
@@ -363,7 +377,7 @@ const CLIENT = {
   root.id = 'w-root';
   root.innerHTML = `
     <div id="w-launcher">
-      <div id="w-label"><span id="w-label-spark">✦</span>Have Questions? Ask AI ✨</div>
+      <div id="w-label"><span id="w-label-spark" style="font-size:.8rem;animation:label-spin 3s linear infinite;flex-shrink:0;">✦</span><span id="w-label-text">Have Questions? Ask AI ✨</span><span id="w-label-close">✕</span></div>
       <div id="w-arrow">↓</div>
       <button id="w-toggle" aria-label="Open chat">
         <img id="w-robot" src="https://raw.githubusercontent.com/PranitMarathe1311/Replai/main/robot.gif" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;top:0;left:0;"/>
@@ -414,7 +428,7 @@ const CLIENT = {
   const sendBtn  = shadow.getElementById('w-send');
   const messages = shadow.getElementById('w-messages');
 
-  let isOpen = false, isWaiting = false, welcomed = false;
+  let isOpen = false, isWaiting = false, welcomed = false, labelDismissed = false;
 
 // ── Cycling label messages ──────────────────────────────────
 const labelMessages = [
@@ -424,6 +438,7 @@ const labelMessages = [
 let labelPhase = 0;
 
 function animateLabelCycle() {
+  if (labelDismissed) return;
   // Pop down
   label.style.transition = 'transform 0.35s cubic-bezier(0.55,0,1,0.45), opacity 0.25s ease';
   label.style.transform  = 'translateY(20px)';
@@ -470,6 +485,13 @@ setTimeout(animateLabelCycle, 4000);
   label.addEventListener('click', toggleChat);
   arrow.addEventListener('click', toggleChat);
   closeBtn.addEventListener('click', toggleChat);
+
+  shadow.getElementById('w-label-close').addEventListener('click', function(e) {
+    e.stopPropagation();
+    labelDismissed = true;
+    label.classList.add('dismissed');
+    arrow.classList.add('hidden');
+  });
 
   function getTime() {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
