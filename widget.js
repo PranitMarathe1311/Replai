@@ -106,17 +106,43 @@ const CLIENT = {
     #w-launcher.open { pointer-events: none; }
     #w-launcher.open #w-toggle { pointer-events: all; }
     #w-label {
-      background: var(--primary);
-      color: black;
-      padding: 7px 13px;
-      border-radius: 18px 18px 4px 18px;
+      background: #1a0f00;
+      color: #f0c96a;
+      padding: 8px 14px;
+      border-radius: 20px 20px 4px 20px;
       font-family: var(--font);
       font-size: .78rem;
       font-weight: 500;
       white-space: nowrap;
-      box-shadow: 0 2px 10px rgba(0,0,0,.18);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.28);
       animation: label-float 2.5s ease-in-out infinite;
       cursor: pointer;
+      overflow: hidden;
+      position: relative;
+    }
+    #w-label::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -60%;
+      width: 40%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(240,201,106,0.15), transparent);
+      animation: label-shimmer 2.5s ease-in-out infinite;
+    }
+    #w-label-spark {
+      font-size: .8rem;
+      animation: label-spin 3s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes label-shimmer {
+      0%   { left: -60%; }
+      100% { left: 120%; }
+    }
+    @keyframes label-spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
     #w-label.hidden { display: none; }
     #w-arrow {
@@ -337,7 +363,7 @@ const CLIENT = {
   root.id = 'w-root';
   root.innerHTML = `
     <div id="w-launcher">
-      <div id="w-label">Have Questions? Ask AI ✨</div>
+      <div id="w-label"><span id="w-label-spark">✦</span>Have Questions? Ask AI</div>
       <div id="w-arrow">↓</div>
       <button id="w-toggle" aria-label="Open chat">
         <img id="w-robot" src="https://raw.githubusercontent.com/PranitMarathe1311/Replai/main/robot.gif" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;top:0;left:0;"/>
@@ -406,7 +432,7 @@ function animateLabelCycle() {
   setTimeout(() => {
     // Swap text
     labelPhase = (labelPhase + 1) % labelMessages.length;
-    label.textContent = labelMessages[labelPhase];
+    label.innerHTML = '<span id="w-label-spark" style="font-size:.8rem;animation:label-spin 3s linear infinite;flex-shrink:0;">✦</span>' + labelMessages[labelPhase];
 
     // Pop up
     label.style.transition = 'transform 0.42s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease';
