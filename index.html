@@ -47,7 +47,8 @@ const CLIENT = {
   rightOffset:    28,               // Distance from right of screen (px)
 
   // -- CONNECTION --
-  webhookUrl:     "https://api.baapofai.com/webhook/saree-demo",
+  //webhookUrl:     "https://api.baapofai.com/webhook/saree-demo",
+  webhookUrl:     "https://hook.eu1.make.com/v3c2kfkj2x58vfl4pl7hk7bezothmmmi",
 
 };
 
@@ -461,7 +462,7 @@ const CLIENT = {
     sendBtn.disabled = true;
     showTyping();
     try {
-      var res = await fetch(CLIENT.webhookUrl, {
+      var res = await fetch(CLIENT.Url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text })
