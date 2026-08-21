@@ -381,7 +381,7 @@ const CLIENT = {
       <div id="w-label"><span id="w-label-spark" style="font-size:.8rem;animation:label-spin 3s linear infinite;flex-shrink:0;">✦</span><span id="w-label-text">Have Questions? Ask AI ✨</span><span id="w-label-close">✕</span></div>
       <div id="w-arrow">↓</div>
       <button id="w-toggle" aria-label="Open chat">
-        <img id="w-robot" src="https://raw.githubusercontent.com/PranitMarathe1311/Replai/main/robot.gif" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;top:0;left:0;"/>
+        <img id="w-robot" src="https://raw.githubusercontent.com/PranitMarathe1311/Sanvi/main/robot.gif" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;top:0;left:0;"/>
         <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         <div id="w-dot"></div>
       </button>
