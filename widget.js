@@ -7,7 +7,7 @@ const CLIENT = {
   // -- ASSISTANT IDENTITY --
   name:            "Sanvi",
   initials:        "AI",
-  logo:            "rangsarees.jpeg",
+  logo:            "Sanvi.jpeg",
 
   // -- COLORS --
   primaryColor:    "#C9A84C",
